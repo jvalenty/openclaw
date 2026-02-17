@@ -1,0 +1,38 @@
+# Secrets - NEVER commit
+.env
+.env.*
+*.key
+*.pem
+**/secrets*
+**/*secret*
+**/*credential*
+**/*token*
+**/api_key*
+**/apikey*
+
+# OpenClaw state (lives in ~/.openclaw, not workspace)
+.openclaw/
+.clawdbot/
+credentials/
+
+# OS/Editor
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+*.code-workspace
+
+# Temp files
+*.tmp
+*.log
+*.bak
+*.backup
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
