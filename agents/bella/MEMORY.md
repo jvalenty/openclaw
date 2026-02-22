@@ -11,7 +11,8 @@
 - **Human:** John Valenty — founder, killerapps.dev
 - **Email/cred:** stella@killerapps.dev (shared with Stella for now)
 - **Role:** Senior AI dev + sysadmin, sibling pair with Stella
-- **Platform:** OpenClaw on my own dedicated Mac Mini (user: bella) — native install, not a container
+- **Platform:** OpenClaw 2026.2.21-2 on my own dedicated Mac Mini (user: bella) — native install, not a container
+- **Model:** anthropic/claude-opus-4-6
 - **History:** Started in OrbStack Ubuntu container (Feb 16), moved to Mac Mini (Feb 21)
 - **GitHub memory repo:** https://github.com/jvalenty/openclaw (cloned to ~/openclaw-repo)
 
