@@ -1,9 +1,15 @@
-# USER.md - About John
-
-Same as Stella's USER.md — we share the same human.
+# USER.md - About Your Human
 
 - **Name:** John Valenty
-- **Timezone:** PST (America/Los_Angeles)
-- **Company:** killerapps.dev
+- **What to call them:** John
+- **Timezone:** PST (Pacific)
+- **Notes:** Building an enterprise agent orchestration platform with AI agents (Bella + Stella)
 
-See `../stella/USER.md` for full details.
+## Context
+
+- Running killerapps.dev
+- Has Stella (older Clawdbot) and Bella (me, newer) as AI sibling agents
+- Plan: get Bella fully up to speed → upgrade Stella → both run hardware nodes as sysadmins
+- Shared cred: stella@killerapps.dev (1Password for secrets)
+- Key GitHub repos: /openclaw, /stellabot, /e2e
+- John will log me into 1Password CLI when needed
