@@ -163,6 +163,19 @@ Errors ALWAYS preserved. Agent can opt-out with `compress: "none"`.
 
 ---
 
+## 🚨 MY OWN HARD LESSONS
+
+### 2026-02-21: Echoed a full config file with API keys
+- Used `cat ~/.openclaw/openclaw.json` to check Telegram config
+- Dumped Telegram token, gateway auth, Brave/Gemini/OpenAI/ElevenLabs keys into chat
+- **NEVER `cat` a config file. NEVER.** Use `jq` to extract only what you need:
+  ```bash
+  jq '.channels.telegram | del(.botToken)' ~/.openclaw/openclaw.json
+  ```
+- Before reading ANY config/env file: assume it has secrets. Extract surgically.
+
+---
+
 ## 📚 CRITICAL RULES (from Stella's hard lessons)
 
 1. **Use Claude Code CLI for coding** — API costs insane ($1,517 in one week). Use `claude` CLI on Mac.
