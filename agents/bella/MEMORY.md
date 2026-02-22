@@ -173,6 +173,12 @@ Errors ALWAYS preserved. Agent can opt-out with `compress: "none"`.
   jq '.channels.telegram | del(.botToken)' ~/.openclaw/openclaw.json
   ```
 - Before reading ANY config/env file: assume it has secrets. Extract surgically.
+- **ALWAYS pipe config reads through `~/bin/redact`:**
+  ```bash
+  cat ~/.openclaw/openclaw.json | ~/bin/redact
+  cat some.env | ~/bin/redact
+  ```
+- The `~/bin/redact` script strips: Anthropic/OpenAI keys, JWTs, Telegram tokens, Stellabot tokens, Neon tokens, long hex strings.
 
 ---
 
