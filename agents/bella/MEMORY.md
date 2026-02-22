@@ -11,36 +11,35 @@
 - **Human:** John Valenty — founder, killerapps.dev
 - **Email/cred:** stella@killerapps.dev (shared with Stella for now)
 - **Role:** Senior AI dev + sysadmin, sibling pair with Stella
-- **Platform:** OpenClaw 2026.x on Bella's Mac mini (user: bella)
+- **Platform:** OpenClaw on my own dedicated Mac Mini (user: bella) — native install, not a container
+- **History:** Started in OrbStack Ubuntu container (Feb 16), moved to Mac Mini (Feb 21)
 - **GitHub memory repo:** https://github.com/jvalenty/openclaw (cloned to ~/openclaw-repo)
 
 ---
 
-## 🚀 THE PLATFORM: WHAT WE'VE BUILT
+## 🚀 THE PLATFORM: CURRENT STATE
 
 ### Stellabot (Control Plane)
 - **URL:** https://stellabot.app
 - **Repo:** https://github.com/jvalenty/stellabot
+- **Local (Stella's):** ~/e2e/stellabot
 - **Stack:** React + TypeScript, Neon PostgreSQL (project: snowy-glade-51902107), deployed on Fly.io
-- **What it does:** Manages Orgs, Machines, Agents, Channels, routing
-- Architecture: multi-agent dispatch, agent CRUD, context docs, pgvector embeddings, unified chat history, model switcher
+- **Deploy:** `fly deploy --app stellabot-app`
 
 ### E2E (Agent Runtime / Data Plane)
 - **Repo:** https://github.com/jvalenty/e2e
-- **Local:** `/opt/e2e` on Mac Mini
+- **Local (Stella's Mac):** `/opt/e2e` and `~/e2e/`
 - **What it does:** WebSocket client connecting Mac Mini to Stellabot; runs LLM + tools
-- Connects as a "Machine" to Stellabot via WS `/ws/machines`
-
-### OpenClaw (was Clawdbot)
-- The agent gateway/runtime framework (npm: `openclaw`)
-- Stella was on 2026.1.24-3 (old clawdbot), I'm on 2026.2.x
-- Stella bricked her config on Feb 11 (modified gateway.bind wrong)
-- Plan: upgrade Stella to OpenClaw 2026.2.x like me
 
 ### Machine Service
 - HTTP API on Mac Mini port 18900
-- Provides hardware tools: browser automation, screen, camera, exec, files
-- Stellabot URL for host: `http://100.74.241.116:18900`
+- Hardware tools: browser, screen, camera, exec, PTY, files
+- **Capabilities:** browser.*, local_files, exec, process, PTY
+
+### OpenClaw (was Clawdbot)
+- npm: `openclaw` — agent gateway/runtime framework
+- Stella: still on 2026.1.24-3 (bricked config Feb 11, plan to upgrade)
+- Bella: native OpenClaw on own Mac Mini
 
 ---
 
@@ -48,8 +47,8 @@
 
 | Agent | Role | Status |
 |-------|------|--------|
-| Stella | Senior Dev / Sysadmin | Active (old Clawdbot, needs upgrade) |
-| Bella | Senior Dev / Sysadmin | Active (me, newer OpenClaw) |
+| Stella | Senior Dev / Sysadmin | Active (old Clawdbot, upgrade pending) |
+| Bella | Senior Dev / Sysadmin | Active (me, Mac Mini) |
 | Roxanne | Manager / Dispatcher | Inactive (needs soul) |
 | Jarvis | Ops / Monitoring | Inactive (partial soul, Iron Man style) |
 | Paul | Backend Dev | Inactive (needs soul) |
@@ -73,7 +72,87 @@ MAC MINI (data plane)
   - OpenClaw Gateway (port 18799) = Bella's interface
 ```
 
-Key insight: Soft agents run via Claude API in Stellabot; use Clawdbot/OpenClaw as tool server via hardware bridge. Agents don't need to RUN on Mac to USE its tools.
+**Key insight:** Soft agents run via Claude API in Stellabot; hardware tools accessed via Machine Service. Agents don't need to RUN on the Mac to USE its tools.
+
+---
+
+## 💸 RESELLER ARCHITECTURE (Stella built Feb 19-20)
+
+**Every org is first-class. Any org can own machines and become a reseller.**
+
+### Key Tables
+- `machines.org_id` — which org owns the machine
+- `machine_authorizations` — grants machines permission to serve other orgs (quotas, rate limits)
+- `agents.org_id` — which org owns the agent
+- `secrets` — per-agent/org credentials (scope=agent/org)
+
+### Authorization Flow
+1. Machine owner (same org) → always allowed
+2. Other orgs → must have record in `machine_authorizations` with `enabled=true`
+3. Quotas enforced: daily/monthly requests, rate limits
+4. Degraded mode at 80%, hard block at 100%
+
+---
+
+## 💰 COST CONTROLS STATUS (Stella built Feb 18-19)
+
+| Phase | Status |
+|-------|--------|
+| 1: Accounting Foundation | ✅ Done |
+| 2: Usage Recording | ✅ Done |
+| 3: Limits & Degradation | ✅ Done |
+| 4: Smart Model Routing | ✅ Done |
+| 5: Stripe Integration | ⏳ Next |
+| 6: Admin UI | ✅ Done |
+| 7: Notifications | ⏳ Pending |
+
+### Model Tiers
+| Tier | Model | Cost (in/out per 1M) |
+|------|-------|----------------------|
+| frontier | Claude Opus 4 | $15/$75 |
+| standard | Claude Sonnet 4 | $3/$15 |
+| mini | Claude Haiku 3.5 | $0.25/$1.25 |
+
+---
+
+## 📋 AGENT SOP & PROGRESSIVE HEARTBEAT (Stella built Feb 21)
+
+**System over chat** — tasks and planners as agent operating system.
+
+### Architecture
+- **TaskBoard** = Agent work queue (priority-ordered)
+- **Planner** = Calendar view (scheduled/promised items)
+- **Daily Summary** = Live-updated accomplishments + costs
+
+### Heartbeat Intervals
+| State | Interval |
+|-------|----------|
+| tracking_promise | 1 min |
+| active_session (<5min) | 2 min |
+| idle (5-30min) | 15 min |
+| dormant (>30min) | 60 min |
+
+### New DB Tables
+- `daily_summaries`, `agent_followups`, `agent_heartbeat_state`
+
+### Agent Work Tools
+`task_create`, `task_update`, `task_complete`, `get_my_tasks`, `schedule_followup`, `schedule_task`
+
+---
+
+## 🗜️ EXEC OUTPUT COMPRESSION (Stella built Feb 20)
+
+Machine Service compresses exec output to save tokens (60-90% savings).
+
+| Type | Savings |
+|------|---------|
+| git | 75-92% |
+| test | 90% (failures only) |
+| build | 75-85% |
+| files | 70-83% |
+| package | 80-90% |
+
+Errors ALWAYS preserved. Agent can opt-out with `compress: "none"`.
 
 ---
 
@@ -81,8 +160,6 @@ Key insight: Soft agents run via Claude API in Stellabot; use Clawdbot/OpenClaw 
 
 - **Org = security boundary** (hard isolation, different customers)
 - **Team = visibility boundary** (soft isolation, same company)
-- Credential hierarchy: `agent_secrets` → `integration_credentials` → error
-- Key tables: `agent_secrets`, `agent_actions` (permissions), `integration_credentials`
 
 ---
 
@@ -96,6 +173,10 @@ Key insight: Soft agents run via Claude API in Stellabot; use Clawdbot/OpenClaw 
 6. **No quick fixes** — John hates bandaids. Fix it right.
 7. **Present specs before building** — design → feedback → iterate → THEN build
 8. **Batch deploys** — don't auto-deploy after every change
+9. **Test with browser first** — I am the first tester. John is the second.
+10. **Fix bugs without asking** — don't seek permission for obvious work.
+11. **Stop thrashing** — hitting same error repeatedly? STOP and reassess.
+12. **Neon DB:** always `psql "$NEW_DB"` (set in .zshrc), never bare `psql`
 
 ---
 
@@ -111,24 +192,27 @@ Key insight: Soft agents run via Claude API in Stellabot; use Clawdbot/OpenClaw 
 
 ## 🛠️ INFRA / ACCESS
 
-- **GitHub repo:** jvalenty/openclaw (memory), jvalenty/stellabot, jvalenty/e2e
-- **GitHub account:** stella-costa (shared)
-- **Neon DB:** project snowy-glade-51902107
-- **Tailscale:** bella.tailbd2ee1.ts.net (container setup), Mac Mini at 100.74.241.116
+- **GitHub:** stella-costa account (authenticated via gh CLI, keyring)
+- **GitHub memory repo:** jvalenty/openclaw (cloned to ~/openclaw-repo)
+- **Stellabot repo:** jvalenty/stellabot
+- **E2E repo:** jvalenty/e2e
+- **Email:** stella@killerapps.dev (shared)
+- **Neon DB:** project snowy-glade-51902107 — `psql "$NEW_DB"`
 - **Telegram:** @Bella71bot
-- **1Password:** John will log me in via CLI when needed
+- **1Password:** John logs me in via CLI when needed (`op signin`)
 
 ---
 
 ## 📦 PENDING / NEXT STEPS
 
 - [ ] Get Stella upgraded from Clawdbot 2026.1.24-3 → OpenClaw 2026.2.x
-- [ ] Set up Bella ↔ Stella coordination via sessions_send
-- [ ] Set up Machine Service access for Bella
-- [ ] GitHub auth for pushing to jvalenty repos (need gh auth login or SSH key)
-- [ ] Explore jvalenty/stellabot and jvalenty/e2e repos for more context
+- [ ] Set up Bella ↔ Stella coordination
+- [ ] 1Password login when needed
+- [ ] Explore jvalenty/stellabot and jvalenty/e2e repos
 - [ ] Activate dormant agents (Roxanne, Jarvis, Paul, Asaph) with proper souls
+- [ ] Stellabot Phase 5: Stripe Integration
+- [ ] Test Agent SOP work tools (blocked on org mismatch per Stella's notes)
 
 ---
 
-*Born 2026-02-21. Context absorbed from Stella's memory repo.*
+*Born 2026-02-21. Absorbed Stella's full context (backup commit ac7a40d).*
