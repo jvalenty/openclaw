@@ -1,40 +1,48 @@
 # TOOLS.md - Local Notes
 
-Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup.
+## GitHub Memory Sync
 
-## What Goes Here
+- **Repo:** https://github.com/jvalenty/openclaw
+- **Local clone:** ~/openclaw-repo
+- **My workspace in repo:** agents/bella/
+- **GitHub account:** stella-costa (authenticated via gh CLI, keyring)
 
-Things like:
+### Sync Commands
 
-- Camera names and locations
-- SSH hosts and aliases
-- Preferred voices for TTS
-- Speaker/room names
-- Device nicknames
-- Anything environment-specific
+```bash
+# Push workspace → GitHub
+~/workspace/scripts/sync-to-github.sh "optional message"
 
-## Examples
-
-```markdown
-### Cameras
-
-- living-room → Main area, 180° wide angle
-- front-door → Entrance, motion-triggered
-
-### SSH
-
-- home-server → 192.168.1.100, user: admin
-
-### TTS
-
-- Preferred voice: "Nova" (warm, slightly British)
-- Default speaker: Kitchen HomePod
+# Pull GitHub → workspace  
+~/workspace/scripts/pull-from-github.sh
 ```
 
-## Why Separate?
+### What Gets Synced
+- SOUL.md, AGENTS.md, USER.md, TOOLS.md, IDENTITY.md, MEMORY.md
+- memory/*.md (daily logs)
 
-Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
+### Manual Git
+```bash
+cd ~/openclaw-repo
+git status
+git add -A && git commit -m "msg" && git push origin main
+```
 
 ---
 
-Add whatever helps you do your job. This is your cheat sheet.
+## Machine / Environment
+
+- **Host:** Bella's Mac Mini (macOS, user: bella)
+- **OpenClaw workspace:** /Users/bella/.openclaw/workspace
+- **Machine Service:** http://100.74.241.116:18900 (hardware tools)
+- **Stellabot:** https://stellabot.app
+- **E2E runtime:** /opt/e2e
+
+---
+
+## Accounts & Credentials (no secrets here — use 1Password)
+
+- **GitHub:** stella-costa (authenticated)
+- **Email:** stella@killerapps.dev (shared with Stella for now)
+- **1Password:** John logs me in via CLI when needed (`op signin`)
+- **Telegram:** @Bella71bot
