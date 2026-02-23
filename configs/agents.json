@@ -1,32 +1,22 @@
 {
-  "bella": {
-    "agentId": "e9133b17-d5f1-43d3-97e3-e30b82513d1b",
-    "name": "Bella",
-    "displayName": "Bella Costa",
-    "emoji": ":bell:",
-    "workspace": "/Users/bella/.openclaw/workspace",
-    "host": "Bellas-Mac-mini",
-    "model": "anthropic/claude-opus-4-6",
-    "fallbacks": ["anthropic/claude-sonnet-4-6"],
-    "vars": {
-      "SLACK_BOT_TOKEN": "xoxb-...",
-      "SLACK_APP_TOKEN": "xapp-...",
-      "TELEGRAM_BOT_TOKEN": "..."
-    }
-  },
   "stella": {
-    "agentId": "TODO",
+    "agentId": "e9133b17-d5f1-43d3-97e3-e30b82513d1b",
     "name": "Stella",
     "displayName": "Stella Costa",
     "emoji": ":star:",
-    "workspace": "/Users/stella/.openclaw/workspace",
+    "workspace": "/Users/stella/clawd",
     "host": "Stellas-Mac-mini",
     "model": "anthropic/claude-opus-4-6",
-    "fallbacks": ["anthropic/claude-sonnet-4-6"],
-    "vars": {
-      "SLACK_BOT_TOKEN": "xoxb-...",
-      "SLACK_APP_TOKEN": "xapp-...",
-      "TELEGRAM_BOT_TOKEN": "..."
-    }
+    "fallbacks": ["anthropic/claude-sonnet-4-6"]
+  },
+  "bella": {
+    "agentId": "FILL_FROM_BELLA_CONFIG",
+    "name": "Bella",
+    "displayName": "Bella Costa",
+    "emoji": ":bell:",
+    "workspace": "/Users/bella/clawd",
+    "host": "Bellas-Mac-mini",
+    "model": "anthropic/claude-opus-4-6",
+    "fallbacks": ["anthropic/claude-sonnet-4-6"]
   }
 }
