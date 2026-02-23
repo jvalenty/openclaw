@@ -67,6 +67,9 @@ const vars = {
   AGENT_MODEL: agent.model,
 };
 
+// Override numeric fields from agent config
+if (agent.gatewayPort) config.gateway.port = parseInt(agent.gatewayPort);
+
 config = substitute(config, vars);
 
 // Fix fallbacks placeholder

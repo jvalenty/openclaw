@@ -1,13 +1,50 @@
 // OpenClaw Config Template — Source of Truth
-// Generated per-agent by: ./scripts/generate-config.sh <agent>
+// Generated per-agent by: ./configs/generate-config.sh <agent>
 // Do NOT edit individual openclaw.json files directly.
-// Version: 2026-02-22
+// Version: 2026-02-23
 {
+  // === Meta (auto-managed by OpenClaw) ===
+  "meta": {
+    "lastTouchedVersion": "2026.2.21-2"
+  },
+
+  // === Browser ===
+  "browser": {
+    "headless": false,
+    "defaultProfile": "openclaw"
+  },
+
+  // === UI ===
+  "ui": {
+    "seamColor": "#FF6B35",
+    "assistant": {
+      "name": "${AGENT_NAME} ${AGENT_EMOJI}",
+      "avatar": "${AGENT_EMOJI}"
+    }
+  },
+
+  // === Auth ===
+  "auth": {
+    "profiles": {
+      "anthropic:default": {
+        "provider": "anthropic",
+        "mode": "api_key"
+      }
+    }
+  },
+
   // === Gateway ===
   "gateway": {
     "port": 18799,
+    "mode": "local",
+    "bind": "loopback",
     "auth": {
+      "mode": "token",
       "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
     }
   },
 
@@ -42,6 +79,14 @@
         "keepLastAssistants": 3,
         "hardClear": { "enabled": true },
         "tools": { "deny": ["browser", "canvas"] }
+      },
+
+      // === Heartbeat ===
+      "heartbeat": {
+        "every": "30m",
+        "model": "anthropic/claude-haiku-4-5",
+        "target": "none",
+        "suppressToolErrorWarnings": true
       }
     },
     "list": [
@@ -67,32 +112,66 @@
     "responsePrefix": "auto"
   },
 
+  // === Commands ===
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+
   // === Channels ===
   "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      },
+      "groupAllowFrom": ["*"],
+      "groupPolicy": "open",
+      "streaming": false
+    },
     "slack": {
+      "mode": "socket",
+      "webhookPath": "/slack/events",
+      "enabled": true,
       "botToken": "${SLACK_BOT_TOKEN}",
       "appToken": "${SLACK_APP_TOKEN}",
+      "userToken": "${SLACK_USER_TOKEN}",
+      "userTokenReadOnly": false,
       "groupPolicy": "open",
       "replyToMode": "off",
       "channels": {
         "C0AGBFKNAMB": {
-          "allow": true,
           "requireMention": false,
           "allowBots": true
         }
       }
-    },
-    "telegram": {
-      "botToken": "${TELEGRAM_BOT_TOKEN}",
-      "dmPolicy": "pairing"
+    }
+  },
+
+  // === Plugins ===
+  "plugins": {
+    "entries": {
+      "telegram": { "enabled": true },
+      "slack": { "enabled": true }
     }
   },
 
   // === Tools ===
   "tools": {
-    "web_search": {
-      "provider": "brave",
-      "apiKey": "${BRAVE_API_KEY}"
+    "web": {
+      "search": {
+        "enabled": true,
+        "apiKey": "${BRAVE_API_KEY}"
+      },
+      "fetch": {
+        "enabled": true
+      }
     }
   },
 
@@ -107,6 +186,9 @@
       },
       "openai-whisper-api": {
         "apiKey": "${OPENAI_API_KEY}"
+      },
+      "sag": {
+        "apiKey": "${ELEVENLABS_API_KEY}"
       }
     }
   }

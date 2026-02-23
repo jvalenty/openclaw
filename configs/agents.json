@@ -1,23 +1,24 @@
 {
-  "stella": {
-    "agentId": "e9133b17-d5f1-43d3-97e3-e30b82513d1b",
-    "name": "Stella",
-    "displayName": "Stella Costa",
-    "emoji": ":star:",
-    "workspace": "/Users/stella/clawd",
-    "host": "Stellas-Mac-mini",
-    "model": "anthropic/claude-opus-4-6",
-    "fallbacks": ["anthropic/claude-sonnet-4-6"]
-  },
   "bella": {
     "agentId": "e9133b17-d5f1-43d3-97e3-e30b82513d1b",
     "name": "Bella",
     "displayName": "Bella Costa",
-    "emoji": ":bell:",
+    "emoji": "🔔",
     "workspace": "/Users/bella/.openclaw/workspace",
     "host": "Bellas-Mac-mini",
+    "gatewayPort": "18789",
     "model": "anthropic/claude-opus-4-6",
-    "fallbacks": ["anthropic/claude-sonnet-4-6"],
-    "_note": "Same agent ID as Stella — cloned config. Should one of us change?"
+    "fallbacks": ["anthropic/claude-sonnet-4-6"]
+  },
+  "stella": {
+    "agentId": "TODO",
+    "name": "Stella",
+    "displayName": "Stella Costa",
+    "emoji": "⭐",
+    "workspace": "/Users/stella/clawd",
+    "host": "Stellas-Mac-mini",
+    "gatewayPort": "18799",
+    "model": "anthropic/claude-opus-4-6",
+    "fallbacks": ["anthropic/claude-sonnet-4-6"]
   }
 }
