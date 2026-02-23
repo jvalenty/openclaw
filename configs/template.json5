@@ -1,0 +1,113 @@
+// OpenClaw Config Template — Source of Truth
+// Generated per-agent by: ./scripts/generate-config.sh <agent>
+// Do NOT edit individual openclaw.json files directly.
+// Version: 2026-02-22
+{
+  // === Gateway ===
+  "gateway": {
+    "port": 18799,
+    "auth": {
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    }
+  },
+
+  // === Agent Identity (per-agent) ===
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "${AGENT_MODEL}"
+      },
+      "models": {
+        "anthropic/claude-sonnet-4-6": {},
+        "anthropic/claude-opus-4-6": {}
+      },
+      "workspace": "${AGENT_WORKSPACE}",
+
+      // === Compaction (safeguard + memory flush) ===
+      "compaction": {
+        "mode": "safeguard",
+        "reserveTokensFloor": 24000,
+        "memoryFlush": {
+          "enabled": true,
+          "softThresholdTokens": 6000,
+          "systemPrompt": "Session nearing compaction. Store durable memories now.",
+          "prompt": "Before compaction, save important context, decisions, and pending work to memory/YYYY-MM-DD.md. Include enough detail that future-you can pick up where you left off. Reply with NO_REPLY if nothing to store."
+        }
+      },
+
+      // === Context Pruning (cache-aware tool trimming) ===
+      "contextPruning": {
+        "mode": "cache-ttl",
+        "ttl": "5m",
+        "keepLastAssistants": 3,
+        "hardClear": { "enabled": true },
+        "tools": { "deny": ["browser", "canvas"] }
+      }
+    },
+    "list": [
+      {
+        "id": "${AGENT_ID}",
+        "default": true,
+        "name": "${AGENT_NAME}",
+        "workspace": "${AGENT_WORKSPACE}",
+        "model": {
+          "primary": "${AGENT_MODEL}",
+          "fallbacks": ["AGENT_FALLBACKS_PLACEHOLDER"]
+        },
+        "identity": {
+          "name": "${AGENT_DISPLAY_NAME}",
+          "emoji": "${AGENT_EMOJI}"
+        }
+      }
+    ]
+  },
+
+  // === Messages ===
+  "messages": {
+    "responsePrefix": "auto"
+  },
+
+  // === Channels ===
+  "channels": {
+    "slack": {
+      "botToken": "${SLACK_BOT_TOKEN}",
+      "appToken": "${SLACK_APP_TOKEN}",
+      "groupPolicy": "open",
+      "replyToMode": "off",
+      "channels": {
+        "C0AGBFKNAMB": {
+          "allow": true,
+          "requireMention": false,
+          "allowBots": true
+        }
+      }
+    },
+    "telegram": {
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
+      "dmPolicy": "pairing"
+    }
+  },
+
+  // === Tools ===
+  "tools": {
+    "web_search": {
+      "provider": "brave",
+      "apiKey": "${BRAVE_API_KEY}"
+    }
+  },
+
+  // === Skills ===
+  "skills": {
+    "entries": {
+      "nano-banana-pro": {
+        "apiKey": "${GOOGLE_API_KEY}"
+      },
+      "openai-image-gen": {
+        "apiKey": "${OPENAI_API_KEY}"
+      },
+      "openai-whisper-api": {
+        "apiKey": "${OPENAI_API_KEY}"
+      }
+    }
+  }
+}
