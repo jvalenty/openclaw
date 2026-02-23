@@ -10,13 +10,14 @@
     "fallbacks": ["anthropic/claude-sonnet-4-6"]
   },
   "bella": {
-    "agentId": "FILL_FROM_BELLA_CONFIG",
+    "agentId": "e9133b17-d5f1-43d3-97e3-e30b82513d1b",
     "name": "Bella",
     "displayName": "Bella Costa",
     "emoji": ":bell:",
-    "workspace": "/Users/bella/clawd",
+    "workspace": "/Users/bella/.openclaw/workspace",
     "host": "Bellas-Mac-mini",
     "model": "anthropic/claude-opus-4-6",
-    "fallbacks": ["anthropic/claude-sonnet-4-6"]
+    "fallbacks": ["anthropic/claude-sonnet-4-6"],
+    "_note": "Same agent ID as Stella — cloned config. Should one of us change?"
   }
 }
