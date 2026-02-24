@@ -30,6 +30,19 @@ git add -A && git commit -m "msg" && git push origin main
 
 ---
 
+## Thunderbolt Bridge (Mac-to-Mac)
+
+- **Bella IP:** 10.0.0.2 (bridge0)
+- **Stella IP:** 10.0.0.1 (bridge0)
+- **SSH to Stella:** `ssh stella@10.0.0.1` (WORKS ✅)
+- **SSH from Stella:** Works (she can reach me at 10.0.0.2)
+- **Ping:** Sub-ms both ways
+- **Note:** WiFi subnets are different (192.168.3.x vs 192.168.2.x), TB bridge is the only direct link
+
+## Deploy Rule
+- **Stella deploys Stellabot.** Bella does not run `fly deploy`.
+- If I need something deployed, I say "ready for deploy" and Stella handles it.
+
 ## Machine / Environment
 
 - **Host:** Bella's Mac Mini (macOS, user: bella)
@@ -49,6 +62,8 @@ git add -A && git commit -m "msg" && git push origin main
 - **Stellabot:** stella@killerapps.dev (Google OAuth in browser)
 - **1Password:** John logs me in via CLI when needed (`op signin`)
 - **Telegram:** @Bella71bot
+- **Slack:** killerapps-dev.slack.com (bella@killerapps.dev, channel configured in OpenClaw)
+- **Slack #sys-admins:** C0AGBFKNAMB
 
 ---
 

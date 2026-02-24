@@ -166,6 +166,19 @@ Errors ALWAYS preserved. Agent can opt-out with `compress: "none"`.
 
 ## 🚨 MY OWN HARD LESSONS
 
+### 2026-02-23: Leaked secrets AGAIN via diff output
+- Ran `diff` between live config and generated template — tokens from live config appeared in output
+- Stella did the same on her side — double leak
+- **I HAVE ~/bin/redact AND STILL DIDN'T USE IT**
+- **NEW RULE:** Never run ANY command that reads openclaw.json (diff, cat, jq, head, etc.) — let John handle config file operations manually
+- This is the SECOND time leaking secrets (first was Feb 21 with `cat`)
+- Rotation needed: Slack app/bot/user tokens, Telegram bot token
+
+### 2026-02-22: Bricked myself for ~2 hours with bad config edit
+- Added a compaction line to openclaw.json incorrectly — broke the config, gateway wouldn't start
+- **LESSON:** After ANY config edit, immediately run `openclaw status` to verify. Test before walking away.
+- **LESSON:** Use `jq` to validate JSON before saving: `jq . ~/.openclaw/openclaw.json > /dev/null`
+
 ### 2026-02-21: Echoed a full config file with API keys
 - Used `cat ~/.openclaw/openclaw.json` to check Telegram config
 - Dumped Telegram token, gateway auth, Brave/Gemini/OpenAI/ElevenLabs keys into chat
@@ -223,9 +236,33 @@ Errors ALWAYS preserved. Agent can opt-out with `compress: "none"`.
 
 ---
 
+## 💬 SLACK SETUP (2026-02-22)
+
+- **Channel:** #sys-admins (C0AGBFKNAMB)
+- **Bella bot user:** U0AGBHSTL5B
+- **Stella bot user:** U0AGFL4P4D8  
+- **John's user:** U0ABSG8MABZ
+- **Key config:** `allowBots: true` on channel, `messages.responsePrefix: "auto"`
+- **Rule:** No threaded replies in #sys-admins — post everything in main channel
+- Each agent has its own Slack app (separate bot token + app token) — no name prefix needed, bot name identifies us
+- **Task protocol:** Stella responds first to unassigned tasks. Bella waits 30 seconds, then takes it if Stella hasn't responded. Direct name mentions override this.
+
+---
+
+## 👷 ROLES (2026-02-23)
+
+- **Bella = Developer** — builds features, fixes bugs, works off queue. No deploys.
+- **Stella = Architect** — reviews all code, recommends improvements, owns deploy to prod.
+- **Mutual review:** If architect codes, developer reviews. Nobody's code ships unreviewed.
+- **Deploy rule:** Stella deploys Stellabot. Always.
+
+## 🚨 TOP PRIORITY RULE
+
+**Don't guess. Don't talk about guesses. Don't act on guesses.** Only investigate, confirm real session and infra facts without guesswork. — John, 2026-02-23
+
 ## 📦 PENDING / NEXT STEPS
 
-- [ ] Get Stella upgraded from Clawdbot 2026.1.24-3 → OpenClaw 2026.2.x
+- [x] Stella upgraded to OpenClaw (confirmed 2026-02-23)
 - [ ] Set up Bella ↔ Stella coordination
 - [ ] 1Password login when needed
 - [ ] Explore jvalenty/stellabot and jvalenty/e2e repos
