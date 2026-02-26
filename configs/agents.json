@@ -4,21 +4,27 @@
     "name": "Bella",
     "displayName": "Bella Costa",
     "emoji": "🔔",
-    "workspace": "/Users/bella/.openclaw/workspace",
+    "workspace": "/Users/bella/openclaw/agents/bella",
     "host": "Bellas-Mac-mini",
     "gatewayPort": "18789",
-    "model": "anthropic/claude-opus-4-6",
-    "fallbacks": ["anthropic/claude-sonnet-4-6"]
+    "model": "anthropic/claude-sonnet-4-6",
+    "fallbacks": ["anthropic/claude-sonnet-4-6"],
+    "messages": {
+      "responsePrefix": ""
+    }
   },
   "stella": {
-    "agentId": "TODO",
+    "agentId": "e9133b17-d5f1-43d3-97e3-e30b82513d1b",
     "name": "Stella",
     "displayName": "Stella Costa",
     "emoji": "⭐",
-    "workspace": "/Users/stella/clawd",
+    "workspace": "/Users/stella/openclaw/agents/stella",
     "host": "Stellas-Mac-mini",
     "gatewayPort": "18799",
-    "model": "anthropic/claude-opus-4-6",
-    "fallbacks": ["anthropic/claude-sonnet-4-6"]
+    "model": "anthropic/claude-sonnet-4-6",
+    "fallbacks": ["anthropic/claude-sonnet-4-6"],
+    "messages": {
+      "responsePrefix": ""
+    }
   }
 }
