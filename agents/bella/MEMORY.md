@@ -116,6 +116,39 @@ MAC MINI (data plane)
 
 ---
 
+## 🔨 TRADEBLADE (active project — Feb 25, 2026)
+
+**Live:** https://tradeblade-app.fly.dev | **Repo:** jvalenty/tradeblade | **Local:** ~/tradeblade (Stella's Mac)
+
+### What it is
+Intraday stock trading platform. Engine runs ORB + other strategies on TSLA via Polygon Pro WebSocket. Paper trading now, E*Trade live later.
+
+### My role
+Backend developer. All routes, DB schema, migrations. Stella owns UI (Claude Code) + deploys.
+
+### Status (Feb 25)
+- ✅ P1: Admin agent controls (PATCH /api/admin/accounts/:id, reset-daily)
+- ✅ P2: Trading sessions + process manager (child_process.spawn engine)
+- ✅ P3: Strategies API + 5 seeded strategies
+- ⏳ P4: Backtest runner (next)
+- ⏳ P5: E*Trade integration
+
+### Key patterns
+- Write to Stella's machine via SSH (ssh stella@10.0.0.1)
+- Always `npx tsc --noEmit` before committing
+- Stella pushes + deploys — never me
+- Call out files before touching to avoid Claude Code conflicts
+
+### Engine
+- Runs in tmux `tradeblade` on Stella's Mac mini
+- Bug: was checking `ev === 'connected'` — fixed to `msg.status === 'connected'`
+- Reads .env (NOT Stellabot secrets — gap to fix)
+- Market hours only; idle at close, live at 9:30 ET
+
+### Reminders
+- Rotate Polygon API key (posted in #trading-room 2026-02-25)
+- Wire Stellabot secrets → engine .env (John's ask)
+
 ## 📋 AGENT SOP & PROGRESSIVE HEARTBEAT (Stella built Feb 21)
 
 **System over chat** — tasks and planners as agent operating system.
