@@ -8,42 +8,13 @@ Skills define *how* tools work. This file is for *your* specifics — the stuff 
 
 **Full documentation:** `~/clawd/docs/ARCHITECTURE.md`
 
-### Local Agent Runtime (NEW 2026-02-15)
+### ~~Local Agent Runtime~~ (DEPRIORITIZED 2026-02-17)
 
-Self-contained agent runtime with web chat interface. Runs in OrbStack VM for isolation.
+**Status:** Deprioritized. Soft agents + Machine Service PTY covers this use case.
 
-**Location:** `~/e2e/agents/`
+Code exists at `~/e2e/agents/` but is not actively maintained.
 
-**Features:**
-- **Dual mode:** CLI (Claude Code, Max Plan) + API (Claude API, Sonnet)
-- **CLI is default** — most work is coding tasks
-- **Web chat UI** — React app on same port
-- **Tool routing** — internal (files, exec) vs host (browser, screen, camera)
-- **Secrets:** Stellabot → 1Password → environment
-
-**Network Options:**
-- Tailscale: `100.74.241.116:18901`
-- CF Tunnel: `agent.example.com` (optional, needs setup)
-
-**Config:** `~/e2e/agents/config.json`
-```json
-{
-  "network": {
-    "tailscale": { "enabled": true },
-    "cloudflare": { "enabled": false, "publicHostname": "..." }
-  },
-  "stellabot": { "enabled": true, "url": "https://stellabot.app" }
-}
-```
-
-**Commands:**
-```bash
-cd ~/e2e/agents
-npm run install:all    # Install all deps
-npm run build          # Build backend + web chat
-npm start              # Run on :18901
-npm run dev            # Dev mode with hot reload
-```
+**Why:** With PTY support, soft agents can drive Claude Code CLI as a tool, getting Max Plan cost benefit without a separate runtime.
 
 ---
 
@@ -140,6 +111,144 @@ const creds = agentId
 
 ---
 
+## Org Scoping Architecture (2026-02-18)
+
+### Knowledge Scope Tiers
+
+| Scope | Who Sees It | Purpose |
+|-------|-------------|---------|
+| `system` | sys_admin only | Internal platform: schema, architecture, ops |
+| `shared` | All orgs | Cross-org best practices, safety rules |
+| `org` | That org only | Org-specific workflows, preferences |
+| `agent` | That agent | Role, personality, learnings |
+| `session` | Ephemeral | Current task context |
+
+**Why separate `system` and `shared`:**
+- `system` = internal platform knowledge (could be exploited by bad actors)
+- `shared` = cross-org wisdom ("don't echo secrets") that benefits everyone
+
+### Client-Side Pattern
+
+All org-scoped pages must:
+1. Import `useSelectedOrg` or `useEffectiveOrgId` from AdminLayout
+2. Pass `?orgId=` to all API calls
+3. Include orgId in query keys for cache invalidation
+
+```typescript
+// Example: AdminUsers.tsx
+const { selectedOrgId } = useSelectedOrg();
+const { data: users } = useUsers(selectedOrgId);
+
+// Hook passes to API
+const url = orgId ? `/api/users?orgId=${orgId}` : '/api/users';
+```
+
+### Server-Side Pattern
+
+Routes must filter by orgId, not user's default org:
+
+```typescript
+// Example: users.ts
+const orgId = req.query.orgId as string | undefined;
+if (orgId) {
+  // Filter by selected org
+  allUsers = await db.select().from(users).where(eq(users.orgId, orgId));
+} else if (isSysAdmin) {
+  // Sys admins can see all when no org selected
+  allUsers = await db.select().from(users);
+} else {
+  // Non-sys-admin without org filter: return empty
+  allUsers = [];
+}
+```
+
+### Pages Correctly Scoped
+- ✅ Knowledge, Planner, Users, Integrations, Secrets, Agents, Channels
+
+---
+
+## Cost Controls & Model Management (2026-02-19)
+
+**Full spec:** `~/e2e/stellabot/docs/specs/cost-controls-model-management.md`
+
+### Architecture
+
+Three-layer cost control hierarchy:
+```
+SYSTEM → Model registry, global rates, platform enable/disable
+  ↓
+ORG → Billing mode, enabled models, daily/monthly limits
+  ↓
+AGENT → Per-agent limits, inherit from org, degraded state
+```
+
+### Model Tiers
+
+| Tier | Model | Input $/1M | Output $/1M |
+|------|-------|------------|-------------|
+| frontier | claude-opus-4-5-20251101 | $15.00 | $75.00 |
+| standard | claude-sonnet-4-20250514 | $3.00 | $15.00 |
+| mini | claude-3-5-haiku-20241022 | $0.25 | $1.25 |
+
+### Billing Modes
+
+| Mode | Description |
+|------|-------------|
+| `demo` | Free trial credits with expiry |
+| `prepaid` | Buy credits upfront |
+| `postpaid` | Invoice at end of period |
+| `byok` | Bring own API keys |
+| `unlimited` | No limits (sys admin override) |
+
+### Admin Pages
+
+| Page | Route | Purpose |
+|------|-------|---------|
+| Model Registry | `/settings/models` | Manage models & pricing (sys admin) |
+| Billing & Usage | `/settings/billing` | Usage dashboard, transactions (org admin) |
+| Agent Costs | `/agents/edit/:id` → Costs tab | Per-agent limits |
+
+### API Endpoints
+
+```
+/api/billing/models         - Model registry CRUD
+/api/billing/account        - Token account management
+/api/billing/usage          - Usage summaries
+/api/billing/transactions   - Transaction history
+/api/billing/agent/:id/*    - Agent cost controls
+```
+
+### Key Tables
+
+| Table | Purpose |
+|-------|---------|
+| `model_registry` | AI models with pricing |
+| `token_accounts` | Per-org billing accounts |
+| `token_transactions` | Immutable credit ledger |
+| `usage_records` | Per-request usage log |
+| `credit_packages` | Purchasable credit bundles |
+
+### Degraded Mode
+
+When agent exceeds cost limit:
+1. `costState.degraded` set to true
+2. Agent auto-downgrades to Haiku (mini)
+3. Banner shown in UI
+4. Resets at daily/monthly boundary
+
+### Implementation Status (2026-02-19)
+
+- ✅ Model registry + pricing
+- ✅ Token accounts + transactions
+- ✅ Usage recording in soft-agent-chat
+- ✅ Pre-request limit checks
+- ✅ Auto-degradation to mini
+- ✅ Admin UI (all pages)
+- ⏳ Stripe checkout/webhooks
+- ⏳ Email notifications
+
+---
+
 ## Stellabot Infrastructure
 
 ### Production
@@ -213,7 +322,7 @@ Fly.io (Stellabot) → Tailscale mesh → Mac Mini (100.74.241.116:18789) → Cl
 
 ---
 
-## Stellabot Machine Service (Updated 2026-02-12)
+## Stellabot Machine Service (Updated 2026-02-18)
 
 Primary hardware interface for soft agents. **Goal: Replace Clawdbot entirely.**
 
@@ -223,10 +332,91 @@ Primary hardware interface for soft agents. **Goal: Replace Clawdbot entirely.**
 | **Code** | `~/e2e/machine/` |
 | **Config** | `~/e2e/machine/config.json` |
 | **Port** | 18900 |
-| **Bind** | `100.74.241.116` (Tailscale IP only) |
-| **Auth** | Bearer token |
+| **Bind** | `0.0.0.0` (via CF tunnel) |
+| **Public URL** | `https://m01.e2e.pro` (CF Access protected) |
+| **Auth** | Bearer token + CF Access service token |
 | **Service** | `~/Library/LaunchAgents/com.stellabot.machine-control.plist` |
 | **Logs** | `~/.stellabot-machine/audit.log` |
+| **Rate Limit** | 500 req/min |
+
+### CF Tunnel Setup (COMPLETE 2026-02-18)
+
+**What's Running:**
+- **Tunnel:** `m01.e2e.pro` → localhost:18900 (Machine Service)
+- **CF Access App:** `e2e-machine-01` protects the tunnel
+- **Service Token:** `Stellabot API` authorized in CF Access policy
+
+**Tunnel Service:**
+```
+~/Library/LaunchAgents/com.cloudflare.tunnel.m01.plist
+Config: ~/.cloudflared/m01-config.yml
+Tunnel ID: db2055b6-3816-45e4-b283-420af067bd77
+```
+
+**Fly Secrets:**
+```
+CF_MACHINE_ACCESS_ID=<service token client id>
+CF_MACHINE_ACCESS_SECRET=<service token client secret>
+```
+
+### Stellabot Heartbeat Config (2026-02-26)
+
+Machine Service sends outbound heartbeat to Stellabot every 60s to maintain "online" status.
+
+**Required fields in `config.json` → `machine` section:**
+```json
+{
+  "machine": {
+    "stellabotUrl": "https://stellabot.app",
+    "apiToken": "<machines.api_token from DB>",
+    "machineId": "<machines.id from DB>",
+    "heartbeatIntervalMs": 60000
+  }
+}
+```
+
+- `apiToken` — Machine's `api_token` from Stellabot DB (NOT `machine_service_token`)
+- `stellabotToken` — kept for authorization checks (`machine_service_token`)
+- Endpoint: `POST /api/machines/heartbeat` (token must start with `e2e_`)
+
+### New Machine Setup Checklist
+
+**1. Create CF Tunnel:**
+```bash
+cloudflared tunnel create <machine-name>
+# Note the tunnel ID
+```
+
+**2. Create tunnel config:**
+```yaml
+# ~/.cloudflared/<machine-name>-config.yml
+tunnel: <tunnel-id>
+credentials-file: ~/.cloudflared/<tunnel-id>.json
+
+ingress:
+  - hostname: <machine>.e2e.pro
+    service: http://localhost:18900
+  - service: http_status:404
+```
+
+**3. Create launchd service:**
+```bash
+# ~/Library/LaunchAgents/com.cloudflare.tunnel.<machine>.plist
+# Use token from: cloudflared tunnel token <tunnel-id>
+```
+
+**4. DNS (in Cloudflare):**
+- Add CNAME: `<machine>.e2e.pro` → `<tunnel-id>.cfargotunnel.com` (proxied)
+
+**5. CF Access App:**
+- Create application protecting `<machine>.e2e.pro`
+- Add policy: Service Auth → include `Stellabot API` service token
+
+**6. Stellabot Machine Record:**
+- Set `tunnel_url` column (NOT config.tunnelUrl) to `https://<machine>.e2e.pro`
+- Set `machine_service_token` to the Machine Service bearer token
+
+**GOTCHA:** The `tunnel_url` DB column must match the tunnel URL. The UI saves to config.tunnelUrl but console reads tunnel_url column. Fix: update DB directly if mismatched.
 
 ### Capabilities (Complete)
 | Category | Endpoints | Notes |
@@ -270,16 +460,48 @@ For development work (editing code, configs):
 **Security:** basePaths whitelist in config.json
 
 ### Security Model
-1. **Network binding** — Tailscale-only (not 0.0.0.0)
+1. **CF Access** — Service token required for tunnel access
 2. **Token auth** — Bearer token on all endpoints
 3. **Path restrictions** — basePaths for file ops
 4. **Command blocklist** — Dangerous commands blocked
 5. **Audit logging** — All requests logged
+6. **Security events** — Auth failures, rate limits tracked
+
+### Console Dashboard (NEW 2026-02-18)
+Full production console at `/ui` with sidebar navigation:
+
+**Overview:**
+- **Dashboard** — Health stats, browser pools, tabs, processes, PTY sessions
+- **Terminal** — Interactive PTY sessions (create, select, send commands)
+
+**Monitoring:**
+- **Logs** — Structured logs with level filter & search (500 entries)
+- **Metrics** — CPU, memory, request stats with visual bars
+- **Security** — Auth failures, rate limits, blocked commands, path violations
+
+**System:**
+- **Diagnostics** — System info, disk space, network, browser status
+- **Secrets** — Credential management
+- **Settings** — View config (redacted), restart service, trigger GC
+
+**Monitoring Endpoints:**
+```
+GET  /monitoring/metrics         - Current system metrics
+GET  /monitoring/metrics/history - Metrics over time
+GET  /monitoring/logs            - Structured logs with filtering
+GET  /monitoring/logs/stats      - Log statistics
+GET  /monitoring/security        - Security events
+GET  /monitoring/diagnostics     - Full system diagnostics
+GET  /monitoring/browser         - Browser/Playwright diagnostics
+GET  /monitoring/config          - Config (redacted)
+POST /monitoring/restart         - Graceful restart
+POST /monitoring/gc              - Trigger garbage collection
+```
 
 ### Service Management
 ```bash
 # Health check
-curl http://100.74.241.116:18900/health
+curl http://localhost:18900/health
 
 # Restart
 launchctl unload ~/Library/LaunchAgents/com.stellabot.machine-control.plist
@@ -288,8 +510,10 @@ launchctl load ~/Library/LaunchAgents/com.stellabot.machine-control.plist
 # Logs
 tail -f ~/.stellabot-machine/audit.log
 
-# Pool status
-curl http://100.74.241.116:18900/browser/profiles -H "Authorization: Bearer $TOKEN"
+# Build & restart after changes
+cd ~/e2e/machine && npm run build
+launchctl unload ~/Library/LaunchAgents/com.stellabot.machine-control.plist
+launchctl load ~/Library/LaunchAgents/com.stellabot.machine-control.plist
 ```
 
 ### Fly Secrets
@@ -304,6 +528,30 @@ All hardware and scheduling capabilities implemented:
 - Scheduling via Stellabot agent-schedules system
 
 **Full docs:** `~/clawd/docs/ARCHITECTURE.md`
+
+### Machine Management UI (NEW 2026-02-17)
+
+Admin UI at `/settings/machines`:
+
+**Desktop View:**
+- Table with columns: Name, Type, Status, URL, Heartbeat
+- Action buttons: Console, Edit
+
+**Mobile View:**
+- Card-based layout
+- Machine name, type badge, status
+- Quick action buttons
+
+**Machine Console Page:**
+- URL: `/settings/machines/:id/console`
+- Embeds Machine Service dashboard in iframe
+- Toolbar: Refresh, New Tab, Fullscreen
+- Proxied through Stellabot for auth
+
+**Console Proxy:**
+- Endpoint: `GET /api/machines/:id/console`
+- Prefers `ip_address:machine_service_port` over `tunnel_url`
+- Overrides helmet headers to allow iframe embedding
 
 ---
 

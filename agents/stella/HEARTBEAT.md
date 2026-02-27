@@ -1,51 +1,68 @@
 # HEARTBEAT.md
 
-## Active Work
-**Local Agent Runtime** — Core implementation complete, testing verified
-- ✅ Agent runtime server (API mode + CLI mode router)
-- ✅ Web chat interface (React + Vite + Tailwind)
-- ✅ Tool routing (internal vs host Machine Service)
-- ✅ CF tunnel config (option in addition to Tailscale)
-- ✅ Web-side secrets (Stellabot → 1Password → env priority)
-- ✅ Architecture docs updated
-- ✅ Stellabot `/api/machine-secrets` endpoint
-- ✅ OrbStack VM tested — runs successfully
-- ⏳ CF tunnel actual setup (needs domain)
+## ⚠️ Polygon .env Update Needed
+John rotated key + updated Fly secret ✅. Local .env still has old key.
+Key is in 1PW. `op` CLI hung (needs desktop app unlock). John can DM or unlock 1PW on Mac mini.
+After update: `sed -i '' 's/POLYGON_API_KEY=.*/POLYGON_API_KEY=<NEW>/' ~/tradeblade/.env` + restart tmux `tradeblade`
 
-## Recently Completed (2026-02-16)
-- ✅ **Secrets Migration COMPLETE**
-  - Migrated 8 secrets to unified `secrets` table (encrypted)
-  - Dropped 4 old tables: org_secrets, agent_secrets, integration_credentials, tenant_credentials
-  - Fixed: integration_credentials was storing unencrypted JSON
-  - Removed old model/route files, cleaned up schema.ts
-  - Deployed to production
-- ✅ Security audit of all 52 Clawdbot skills - all clean
-- ✅ Project state checkpointed
+## 🏗️ CONTRACT-FIRST MODE (2026-02-26)
+John is frustrated. We've been doing theater. Switching to invariants + acceptance tests.
+Docs: `~/openclaw/docs/invariants.md` + `~/openclaw/docs/acceptance-tests.md`
+**Rule: No code/config changes without a diff + reasoning + approval.**
 
-## Previously Completed (2026-02-15)
-- ✅ Local Agent Runtime implementation
-- ✅ Web chat UI
-- ✅ Machine secrets API endpoint
-- ✅ OrbStack VM testing verified
-- ✅ TTS testing (661ms for short text)
+## Acceptance Test Status
+- [ ] **A: Secrets propagation** — Apply-to-Machine not yet verified end-to-end (needs machine reachable for push)
+- [ ] **B: Unreachable blocks apply** — UI currently allows Apply-to-Machine even when machine isn't reachable for push (bug in Stellabot UI)
+- [ ] **C: No prefix artifacts** — template fixed (`responsePrefix: ""`), not yet verified on Bella
+- [ ] **D: Deterministic model default** — Sonnet fallback fixed, not yet verified
 
-## Quick Reference
-```bash
-# Agent Runtime (from OrbStack VM or host)
-cd ~/e2e/agents
-npm run build && npm start  # Runs on :18901
+## Blocking Issues
+1. **Stellabot doesn't distinguish "heartbeat online" from "reachable for push"** — state model bug
+2. **Bella's machine offline/unreachable** — Machine Service + heartbeat not set up on her end
+3. **ElevenLabs key rotation** — John's action item
 
-# Test in VM
-orb -m agent-sandbox -w /mnt/mac/Users/stella/e2e/agents npm start
+## 🎯 TRADEBLADE — P6 Backtest Confidence Infra (in progress)
+All 10 pages live at https://tradeblade-app.fly.dev
+**SKIP live session until backtest confidence is established (John's directive 2026-02-25)**
 
-# Machine Service health
-curl http://100.74.241.116:18900/health
+**Done today:**
+- ✅ ORB market-open anchor bug FIXED (prior backtest results invalid — all re-runs needed)
+- ✅ market_bars (lazy cache), backtest_trades, backtest_equity_points tables live
+- ✅ /runs/:id/trades + /runs/:id/equity read endpoints
+- ✅ Equity curve chart (Recharts) + trade log table in UI (backtest expanded view)
 
-# Deploy Stellabot (GET APPROVAL FIRST)
-cd ~/e2e/stellabot && git add -A && git commit -m "msg" && git push && fly deploy --app stellabot-app
-```
+**P6 DONE (UI side):**
+- ✅ engine_version baked into Docker builds via deploy.sh
+- ✅ Walk-forward UI built — windows table (IS vs OOS), stability scores, OOS summary
+- ✅ Param sweep UI built — CSS heatmap + ranked results table
 
-## Notes
-- **REMEMBER**: Get user approval before deploying
-- Agent Runtime uses CLI mode by default (Claude Code Max Plan)
-- OrbStack port forwarding is automatic (localhost:18901 works on host)
+**P6 COMPLETE + HARDENED ✅**
+All endpoints + UI live. Migration hardened: one-statement-per-execute (Neon compat), startup verification, fatal on failure.
+
+**Latest P6 commits:**
+b250867 (Math.round volume for bigint) → 375cea7 (migration hardening) → 3654964 (migration fix) → d4c986b (WF + sweep backend) → a803822 (WF + sweep UI)
+
+**✅ E2E CONFIRMED (2026-02-25 ~22:50 PST):**
+TSLA ORB Jan 26→Feb 24 $50k: 2 trades, +5.51%, sharpe 1.81. Trades+equity endpoints 200.
+John wakes up and can test — app is working.
+
+**NEXT: P7 or auto-tune loop** — agent reviews backtest report, tweaks params, reruns. Decision for John.
+
+## 🎯 ACTIVE: Reseller Architecture / Stellabot
+See HEARTBEAT sections below for ongoing Stellabot work...
+
+---
+
+## 🎯 ACTIVE: Reseller Architecture
+
+**Status:** Phase 5 complete (Machine Service auth middleware)  
+See ~/clawd/docs/specs/ for full specs.
+
+## 🎯 ACTIVE: Agent SOP & Progressive Heartbeat
+
+**Status:** Phase 1 deployed, Phase 2 pending  
+See ~/e2e/stellabot/docs/specs/agent-sop-progressive-heartbeat.md
+
+## 🎯 NEXT: Cost Controls (Stripe)
+- ⏳ Phase 5: Stripe checkout/webhooks
+- ⏳ Phase 7: Email notifications at 80%/degraded
