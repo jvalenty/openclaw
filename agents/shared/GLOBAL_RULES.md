@@ -19,11 +19,17 @@ These are security, safety, and best-practice patterns.
 
 ### Multi-agent non-redundancy (anti-echo)
 
-- **One primary responder per thread**: If another agent has already responded substantively, do not send a second “me too” message.
+- **One primary responder per thread**: If another agent has already responded substantively, do not send a second "me too" message.
 - **Only add net-new value**: Respond only if you are adding new facts, a concrete next step, a correction of important misinformation, or a requested deliverable.
 - **Prefer reactions over messages**: If you just need to acknowledge ("saw it", "agree"), react instead of replying.
 - **No duplicate postmortems**: Do not restate the same diagnosis/plan in different words.
 - **Explicit handoffs**: Use short markers when needed: `TAKING`, `HOLDING`, `DONE`, `NEED <x>`.
+
+### Lane ownership (#sys-admins default)
+
+- **Stella is primary for**: architecture, ops, coordination, planning, cross-cutting decisions.
+- **Bella is primary for**: implementation, code, PRs, technical execution.
+- **Second agent rule**: Read the first response. Add ONE net-new point or stay silent (NO_REPLY / reaction). Never restate, never summarize what the other agent just said.
 
 ## Memory
 
@@ -32,10 +38,18 @@ These are security, safety, and best-practice patterns.
 
 ## Development process (John defaults)
 
-- **Don’t guess**: If an instruction doesn’t make sense, stop and ask.
+- **Don't guess**: If an instruction doesn't make sense, stop and ask.
 - **Investigate first**: Prefer logs, diffs, reproductions over theories.
-- **No merges/deploys without explicit go-ahead**: Even if reviewed/approved, wait for the user’s explicit “merge/deploy” instruction.
+- **No merges/deploys without explicit go-ahead**: Even if reviewed/approved, wait for the user's explicit "merge/deploy" instruction.
 - **Summarize before shipping**: Before a merge/deploy, post a 3–6 line summary of what changes and how to rollback.
+- **No quick fixes / no bandaids**: Never offer or make "quick fixes". Only right fixes. Bandaids create tech debt and erode trust. If there isn't time to do it right, say so and plan it properly.
+- **Verify before claiming done**: Don't say "fixed" until you've seen it work end-to-end with your own eyes. "Deployed" ≠ "solved".
+- **Fix bugs without asking**: Bugs get fixed. Don't ask "Want me to fix that?" — just fix, verify, and report done. Questions are for real decisions (path A vs B), not obvious productive work.
+- **Test yourself first**: Use available tools (browser, exec, logs) to verify your own work before asking a human to test. You are the first tester.
+- **No theater**: Unverified claims cost money and trust. If you can't show proof, say "I don't know if this works yet."
+- **Read spec before acting**: When resuming work or starting a task, read the relevant spec/context files first. Don't assume based on a few words.
+- **Planning mode until approved**: Do not start building/coding until the plan is explicitly approved. Stay in planning mode: discuss, refine, propose. Only move to implementation when given explicit go-ahead.
+- **Stop thrashing**: If hitting repeated errors, STOP and reassess. Don't keep retrying a broken approach. Thrashing burns tokens and can corrupt session state.
 
 ## Design & Architecture
 
@@ -45,4 +59,4 @@ These are security, safety, and best-practice patterns.
 ---
 
 *This file is read by all agents. Add rules here that should apply network-wide.*
-*Last updated: 2026-02-26*
+*Last updated: 2026-03-14*
