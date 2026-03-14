@@ -873,3 +873,18 @@ fetch('/api/integrations/sheets/metadata', {
 ---
 
 Add whatever helps you do your job. This is your cheat sheet.
+
+## Fly.io CLI Auth Fix
+
+If `fly auth whoami` or `fly deploy` fails with "No access token available":
+
+```bash
+# The token IS in ~/.fly/config.yml — the env var name changed in newer fly CLI versions
+export FLY_ACCESS_TOKEN="$(grep access_token ~/.fly/config.yml | awk '{print $2}')"
+fly auth whoami  # should show stella@killerapps.dev
+```
+
+Add to `~/.zshrc` to make it permanent:
+```bash
+echo 'export FLY_ACCESS_TOKEN="$(grep access_token ~/.fly/config.yml | awk '"'"'{print $2}'"'"')"' >> ~/.zshrc
+```

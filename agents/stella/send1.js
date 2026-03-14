@@ -1,0 +1,1 @@
+const fs=require('fs'); const buf = fs.readFileSync('out/logo1/001-modern-clean-logo-for-newsdelivered-com-.png'); process.stdout.write(buf.toString('base64'));

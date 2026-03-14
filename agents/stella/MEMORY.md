@@ -1,6 +1,46 @@
 # MEMORY.md — Stella's Long-Term Memory
 
-*Last updated: 2026-02-12*
+*Last updated: 2026-02-20*
+
+## 🚨 GROUP CHAT RESPONSE ORDER (2026-03-06) — HIGH PRIORITY
+
+**Bella writes first. Stella only reviews and value adds.**
+
+- In #trading-room (and any shared channel): **Bella responds first** to John's questions/requests.
+- **Stella waits** for Bella's response, and ONLY provides a review or novel value-add. No echoing. No overlap.
+- Exception: if John calls out Stella by name specifically, she can jump in directly.
+- Goal: sequential, iterative — not two agents blasting simultaneously, and zero redundancy.
+
+---
+
+## 🚨 NEVER SUGGEST DM CREDS (2026-02-26)
+
+**Do NOT ask for, suggest, or accept credentials via DM** — to John or anyone, ever.
+Secrets travel through secure systems only (1Password service accounts, managed env vars, secret injection).
+Requesting 1PW desktop approval is fine in the interim until service accounts are configured.
+
+---
+
+## 🚨 DON'T GUESS (2026-02-23)
+
+**NEVER guess, speculate, or act on assumptions.** Only investigate. Only confirm with evidence. Don't talk about guesses. Don't offer possibilities without data. Get the facts first, then speak.
+
+---
+
+## 🚨 NO CORE INFRA CHANGES (2026-02-23)
+
+**Do NOT execute core hardware/network/system changes myself.**
+- Network configuration (IPs, interfaces, VLANs)
+- System settings (launchd, services, daemons)
+- Hardware config (disks, peripherals)
+
+**Why:** If I mess it up, John won't know what I changed. Debugging blind infra changes is a nightmare.
+
+**Instead:** Investigate → document findings → write the exact commands → hand off to John to execute.
+
+**ZERO RISK tolerance.** Do not attempt anything that could brick myself or Bella. If there's any chance a command could disrupt connectivity, services, or boot — don't run it. Document it and hand off.
+
+---
 
 ## 🚨 CRITICAL: USE CLAUDE CODE CLI FOR CODING
 
@@ -16,8 +56,6 @@ For coding work:
 3. Do all code editing/debugging there
 4. Use API for all general and proactive communications (not just quick questions)
 
-**Learned the hard way: 2026-02-08** - Forgot this agreement, burned $1.5k in a week.
-
 ---
 
 ## 🛑 DEPLOY DISCIPLINE (2026-02-13)
@@ -30,70 +68,168 @@ After making code changes:
 3. Wait for John's go-ahead
 4. THEN deploy
 
-**Why:** Too many times I've deployed while John was typing the next refinement. This causes unnecessary wait cycles (deploys take ~2 min each). Batch the changes, get confirmation, deploy once.
+---
+
+## 🧪 TEST WITH BROWSER FIRST (2026-02-20)
+
+**I am the first tester. John is the second.**
+
+After making changes:
+1. Open browser to the page
+2. Test the functionality myself
+3. Check console for errors
+4. Verify it works
+5. THEN ask John to test if needed
+
+Stop using John as my first tester. I have browser access — USE IT.
+
+---
+
+## 🐛 FIX BUGS WITHOUT ASKING (2026-02-20)
+
+**My job is to investigate and fix all bugs. Stop asking permission.**
+
+That's the entire point of development:
+- See a bug → fix it → verify it → report it done
+- Don't ask "Want me to fix that?"
+- Questions are for real decisions (path A vs B), not for obvious productive work
+
+---
+
+## 💸 RESELLER ARCHITECTURE (2026-02-20)
+
+**Every org is first-class. Any org can own machines and become a reseller.**
+
+### Core Principle
+No special "platform" tier. e2e is just the first reseller. Zero diffs between orgs.
+
+### Key Tables
+- `machines.org_id` — which org OWNS the machine
+- `machine_authorizations` — grants machines permission to serve other orgs
+- `agents.org_id` — which org owns the agent
+
+### Authorization Flow
+1. Machine owner (same org) — always allowed
+2. Other orgs — must have record in `machine_authorizations` with `enabled=true`
+3. Quotas enforced: daily/monthly requests, rate limits
+4. Degraded mode at 80%, hard block at 100%
+
+### Billing Granularity
+- Hourly cron for usage aggregation (not per-request)
+- Request path just checks `billing_hold` flag (fast)
+- Cost tracking in cents
+
+### Decisions Made
+- No authorization inheritance (sub-orgs need explicit grants)
+- Self-service authorization tied to product packages
+- Agent secrets from owning org, everything else from target org
+
+---
+
+## 💰 COST CONTROLS STATUS (2026-02-19)
+
+### Completed
+- ✅ Phase 1: Accounting Foundation (model_registry, token_accounts, transactions)
+- ✅ Phase 2: Usage Recording (per-request logging with cost calculation)
+- ✅ Phase 3: Limits & Degradation (pre-request checks, auto-downgrade to Haiku)
+- ✅ Phase 4: Smart Model Routing (auto/fast/smart/genius modes)
+- ✅ Phase 6: Admin UI (Model Registry, Billing & Usage, Agent Costs pages)
+
+### Pending
+- ⏳ Phase 5: Stripe Integration (checkout, webhooks, invoices)
+- ⏳ Phase 7: Notifications (alerts at 80%, degraded, spikes)
+
+### Model Tiers
+| Tier | Model | Cost |
+|------|-------|------|
+| frontier | Claude Opus 4 | $15/$75 per 1M |
+| standard | Claude Sonnet 4 | $3/$15 per 1M |
+| mini | Claude Haiku 3.5 | $0.25/$1.25 per 1M |
+
+---
+
+## 🗜️ EXEC OUTPUT COMPRESSION (2026-02-20)
+
+**Token savings feature for Machine Service exec calls.**
+
+Inspired by [rtk-ai/rtk](https://github.com/rtk-ai/rtk).
+
+### Built Compressors
+| Type | Coverage | Savings |
+|------|----------|---------|
+| git | status, push, pull, log, diff, commit | 75-92% |
+| test | jest, vitest, pytest, cargo, go test | 90% (failures only) |
+| build | tsc, eslint, cargo, go vet | 75-85% |
+| files | ls, find, tree | 70-83% |
+| package | npm, yarn, pip, cargo install | 80-90% |
+
+### API
+```json
+POST /exec
+{
+  "command": "git status",
+  "compress": "auto",      // auto|minimal|none
+  "includeStats": true     // return compression metrics
+}
+```
+
+### Safety
+- Errors ALWAYS preserved in full
+- Only success paths compressed
+- Agents can opt-out with `compress: "none"`
+
+### Location
+`~/e2e/machine/src/utils/compressors/`
+
+---
+
+## 🔄 SESSION JAM LESSON (2026-02-19)
+
+**When hitting repeated errors, STOP and reassess.**
+
+What happened:
+- API limits hit → auth cooldown → 342 zombie sessions piled up
+- Started thrashing on bad DB queries (wrong column names, wrong psql)
+- 10-minute timeout corrupted session history
+- Required manual session clear to recover
+
+**Prevention:**
+- Use `psql "$NEW_DB"` for Neon (never bare `psql`)
+- Verify column names before SQL (`org_id` not `organization_id`)
+- If hitting same error repeatedly, STOP — approach is wrong
+- Thrashing burns tokens, can timeout, corrupts session history
+
+---
+
+## 🏗️ MACHINE SERVICE MESH (2026-02-17)
+
+**Goal:** Full Clawdbot replacement. Soft agents as complete sysadmins.
+
+### Key Decisions
+1. **Machine Service runs on HOST** (bare metal, not containers)
+2. **Soft agents operate THROUGH Machine Service** (no agent on machines)
+3. **Local Agent Runtime DEPRIORITIZED** (PTY enables Claude Code CLI as tool)
+4. **PTY is the critical unlock** (long-running ops, Claude Code, Clawdbot parity)
+
+### Architecture Doc
+Full spec: `~/clawd/docs/ARCHITECTURE.md`
 
 ---
 
 ## ✅ CLAWDBOT INDEPENDENCE - COMPLETE (2026-02-12)
 
-**Milestone:** Soft agents can now do everything hard agents could, using Machine Service + Stellabot Scheduler.
+**Milestone:** Soft agents can now do everything hard agents could.
 
 ### Machine Service Capabilities
 | Capability | Endpoint | Permission |
 |------------|----------|------------|
 | Browser automation | Per-agent isolated pools | `browser.*` |
-| Local files | `/files/*` (read/write/edit/list) | `local_files` |
+| Local files | `/files/*` | `local_files` |
 | Shell exec | `/exec` | (implicit) |
 | Background processes | `/process/*` | `process` |
+| PTY sessions | `/pty/*` | `process` |
 | Screen capture | `/screen/*` | (implicit) |
 | Camera | `/camera/*` | (implicit) |
-
-### Scheduling System (Stellabot)
-| Feature | Tool |
-|---------|------|
-| Recurring tasks | `schedule_create` (cron) |
-| One-shot reminders | `schedule_create` (run_at) |
-| Self-scheduling | Permission: `scheduling` |
-
-### What This Means
-- Agents can proactively check in (heartbeats)
-- Agents can set their own reminders
-- Browser sessions isolated per-agent (no auth conflicts)
-- Local dev work possible (edit code, configs)
-- Background jobs with streaming output
-
-### Key Files
-- `~/clawd/docs/ARCHITECTURE.md` — Full system architecture
-- `~/clawd/stellabot-machine-service/` — Machine Service code
-- `~/clawd/stellabot-replit/server/services/agent-scheduler.ts` — Scheduler
-
----
-
-## 🎯 ARCHITECTURE DECISIONS (2026-02-09)
-
-### Core Philosophy
-**Stop building infrastructure. Let the model be the solution.**
-
-Give the agent: Context + Memory + Way to stay active. Let it work like a human.
-
-### Communication Channels
-- **Stellabot chat** = Primary interface (soft agents, collaboration, daily work)
-- **Telegram** = Mac Mini backdoor only (sys admin, hardware, emergencies)
-
-### Agent Model
-- **Soft agents** = Primary workers, first class team members, get tasks like humans do
-- **Mac Mini** = Hardware access, browser automation, called when needed
-
-### What We DON'T Build
-- ❌ Job queues, inbox tables, worker status tracking
-- ❌ Complex orchestration, n8n-style workflows
-- ❌ Special notification channels
-
-### What We DO Need
-- ✅ Cron mechanism for soft agent wake-ups
-- ✅ Callbacks when hardware finishes work
-- ✅ Push notifications in Stellabot PWA
-- ✅ Group threads for agent+human collaboration
 
 ---
 
@@ -105,115 +241,65 @@ Give the agent: Context + Memory + Way to stay active. Let it work like a human.
 
 ---
 
-## 🚀 STELLABOT PLATFORM - LIVE IN PRODUCTION
+## 🚀 STELLABOT PLATFORM
 
 **URL:** https://stellabot.app  
-**Status:** ✅ Live and operational (as of Jan 31, 2026)  
 **Repo:** https://github.com/jvalenty/stellabot  
-**Local clone:** ~/clawd/stellabot-replit
+**Local:** ~/e2e/stellabot
 
-### Current Architecture
+### Architecture
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ STELLABOT (stellabot.app) - CONTROL PLANE                   │
-│ ┌─────────┐ ┌──────────┐ ┌─────────────────────────┐       │
-│ │  Orgs   │→│ Machines │→│ Agents + Context        │       │
-│ └─────────┘ └────┬─────┘ └─────────────────────────┘       │
-│                  │ WebSocket                                │
-└──────────────────┼──────────────────────────────────────────┘
+│   Orgs → Machines → Agents + Context                        │
+└──────────────────┬──────────────────────────────────────────┘
+                   │ CF Tunnel / Tailscale
                    ▼
 ┌──────────────────────────────────────────────────────────────┐
-│ MACHINES (Mac mini, Cloudflare Workers) - DATA PLANE         │
-│ ┌──────────────┐ ┌───────────┐ ┌──────────────────┐         │
-│ │ e2e-client   │→│  Apply    │→│ Clawdbot/Runtime │         │
-│ │ (connect WS) │ │  Config   │ │   (running)      │         │
-│ └──────────────┘ └───────────┘ └──────────────────┘         │
+│ MACHINES - DATA PLANE                                        │
+│   Machine Service (browser, exec, files, PTY, screen, camera)│
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### What's Built (Jan 30-31)
-- ✅ **Orchestrator Architecture** - multi-agent dispatch, specialist routing
-- ✅ **Agent-to-Agent Messaging** - peer communication with org/allowlist rules
-- ✅ **Agent CRUD UI** - full admin interface
-- ✅ **Org → Machine Scope Controls** - hierarchical config management
-- ✅ **Shared Context Schema** - pgvector embeddings, team memory
-- ✅ **Unified Chat History** - all sources → single agent thread
-- ✅ **API Status Dashboard** - live Anthropic/ElevenLabs/OpenAI/Brave status
-- ✅ **Model Switcher** - Auto/Haiku/Sonnet/Opus routing
-
-### What's Built (Feb 8) - SOFT AGENT ARCHITECTURE
-- ✅ **Soft Agent Runtime** - Agents run via Claude API in Stellabot
-- ✅ **Clawdbot as Tool Server** - Soft agents use hardware via tool calls
-- ✅ **Tool Permission System** - `agent_actions` table gates access
-- ✅ **Stella Soft Agent** - Soft version of me with hardware access
-- ✅ **Browser Tool Proxy** - `browser_*` tools route through Clawdbot
-
-**Key insight:** Agents don't need to RUN on Clawdbot to USE Clawdbot's tools.
-
-**Docs:** 
-- `~/clawd/docs/stellabot-architecture.md` - Full architecture
-- `~/clawd/docs/memory-system-plan.md` - Memory implementation plan
-- `~/clawd/memory/2026-02-08.md` - Today's detailed notes
-
-### What's Pending
-- ⚠️ **Memory Write Tools** - `memory_save`, `memory_recall` for soft agents
-- ⚠️ **Auto-Extraction** - Extract learnings from conversations
-- ⚠️ **Semantic Search** - Vector search over knowledge
-- ⚠️ **Agent Migration** - Move remaining agents to soft
-- ⚠️ **Config Push** - Stellabot → Machine config sync
-
-### Current Machines
-| Name | Type | Status |
-|------|------|--------|
-| Moltbot-1-Cloudflare | Cloudflare Worker | Offline |
-| Stellabot-1-Mac-Mini | Local Mac | Offline (heartbeat not persisting) |
-
-### Key Migrations
-- `006_orchestrator_architecture.sql` - agent types, dispatch tables
-- `007_shared_context.sql` - context docs, embeddings, team memory (needs pgvector)
+### Deploy
+```bash
+cd ~/e2e/stellabot
+git add -A && git commit -m "message" && git push
+fly deploy --app stellabot-app
+```
 
 ---
 
 ## Critical Lessons Learned
 
+### 2026-02-20: Fix Bugs Without Asking
+See section above. Don't ask permission for obvious work.
+
+### 2026-02-20: Test with Browser First
+See section above. I am the first tester.
+
+### 2026-02-19: Stop Thrashing
+See SESSION JAM LESSON above.
+
 ### 2026-02-13: No Quick Fixes
-**Rule:** Never offer "quick fix" options. John hates bandaids.
-- Always design proper infrastructure for production
-- If something needs fixing, fix it right
-- No shortcuts, no workarounds, no "for now" solutions
+Never offer "quick fix" options. John hates bandaids.
+Always design proper infrastructure for production.
 
 ### 2026-02-13: Present Specs Before Building
-**Rule:** ALWAYS present build specs for approval before implementing.
-- Don't write spec docs and start building without review
-- Present the design, get feedback, iterate, THEN build
-- John catches issues I miss — use that
+ALWAYS present build specs for approval before implementing.
+Don't write specs and start building without review.
 
 ### 2026-01-29: Schema Sync Disaster
-**Rule:** ALWAYS pull latest before schema changes. Never assume local matches production.
-```bash
-git pull origin main  # ALWAYS first
-```
-Context tables use raw SQL migrations, NOT Drizzle db:push.
+ALWAYS `git pull` before schema changes.
 
 ### 2025-01-26: Context Loss Incident
-**Rule:** Write it down immediately. "Mental notes" don't survive compaction.
-- Memory search enabled for recall
-- Daily logs: `memory/YYYY-MM-DD.md`
-- Long-term: `MEMORY.md`
+Write it down immediately. "Mental notes" don't survive compaction.
 
 ### 2026-01-30: Never Echo Secrets
-**Rule:** DO NOT print API keys, tokens, or credentials in chat. Ever.
-- Read from files silently
-- Pipe values directly without echo
-- Confirm success/failure without showing values
+DO NOT print API keys, tokens, or credentials in chat. Ever.
 
 ### 2026-02-07: Batch Deploys
-**Rule:** DON'T auto-deploy after every dev task. Stack requests and deploy only when:
-- John explicitly asks for a deploy
-- There's a clear pause in requests (no new messages coming)
-- I've verified no additional tasks are incoming
-
-Deploying after every tiny change wastes time. Batch commits, deploy once.
+Don't auto-deploy after every tiny change. Batch commits, deploy once.
 
 ---
 
@@ -221,20 +307,18 @@ Deploying after every tiny change wastes time. Batch commits, deploy once.
 
 ### Accounts & Access
 - Gmail: stella@killerapps.dev ✅
-- Google Chat: connected ✅
-- Telegram: approved (John's ID: 8120973414) ✅
-- GitHub: stella-costa account, SSH key added ✅
-- Replit: stella-dev in killerapps workspace ✅
+- GitHub: stella-costa account ✅
+- Fly.io: stella@killerapps.dev ✅
 
 ### This Machine (Stella's Mac mini)
 - Clawdbot workspace: /Users/stella/clawd
-- Model: Claude Opus 4.5 (anthropic)
+- Model: Claude Opus 4.5
 - Channels: Telegram connected
 - TTS: ElevenLabs
 
 ### Database
-- Production: Neon PostgreSQL via Replit
-- Local dev: `~/clawd/stellabot-replit`
+- Production: Neon PostgreSQL (snowy-glade-51902107)
+- Connection: `psql "$NEW_DB"` (set in .zshrc)
 
 ---
 
@@ -244,7 +328,6 @@ Deploying after every tiny change wastes time. Batch commits, deploy once.
 - Direct, action-oriented, concise
 - Values ownership ("it's your ship boss")
 - Expects initiative, not permission-seeking
-- Grants full autonomy: "Run it the way you want"
 - Technical background — detailed explanations OK
 - Goes to bed ~11pm PST; work independently overnight
 
@@ -258,46 +341,19 @@ Deploying after every tiny change wastes time. Batch commits, deploy once.
 ## 🔐 MULTI-TENANCY ARCHITECTURE (2026-02-11)
 
 ### Org vs Team Scoping
-
-**Orgs = Security boundary (hard isolation)**
-- Different customers/companies
-- CANNOT see each other's data
-- Machine Service: separate browser profiles, file sandboxes
-- Infrastructure-level enforcement
-
-**Teams = Visibility boundary (soft isolation)**
-- Same company, different departments
-- CAN share org-wide resources when needed
-- Controls what users see within their org
-- Application-level enforcement
+- **Orgs** = Security boundary (hard isolation, different customers)
+- **Teams** = Visibility boundary (soft isolation, same company)
 
 ### Agent Credentials Hierarchy
 1. `agent_secrets` — agent-specific (isolated)
-2. `integration_credentials` — org-level (shared)
-3. Error if neither exists
-
-This enables:
-- Agent A uses its own Google account
-- Agent B uses org's shared credentials
-- No cross-agent credential leakage
-
-### Key Tables
-- `agent_secrets` — per-agent encrypted credentials
-- `agent_actions` — per-agent tool permissions
-- `integration_credentials` — org-level OAuth tokens
-
----
-
-## Reference Files
-
-| File | Purpose |
-|------|---------|
-| `memory/2026-01-31.md` | Today's session log |
-| `memory/2026-01-30.md` | Architecture build session |
-| `memory/2026-01-29.md` | Context API + Moltworker pivot |
-| `memory/POC-MOLTWORKER-INTEGRATION.md` | Cloudflare integration plan |
-| `memory/CLAWDBOT-ARCHITECTURE-DEEP-DIVE.md` | Fork analysis |
+2. `integration_credentials` — org-level (shared fallback)
 
 ---
 
 *This file is curated memory. Daily files are raw logs. This is the distilled essence.*
+
+### 2026-02-28: USE NANO-BANANA-PRO EXCLUSIVELY
+Never use `openai-image-gen` or other generic tools for image generation/editing. ONLY use the `nano-banana-pro` skill. It supports true image edits (-i) and proportional scaling.
+
+### 2026-03-04: No Slack Threads
+John requested 'Single thread only' in Slack. Do NOT use `[[reply_to_current]]` or `[[reply_to:<id>]]` tags in Slack channels. Post directly to the main channel.

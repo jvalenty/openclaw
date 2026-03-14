@@ -11,58 +11,22 @@ Docs: `~/openclaw/docs/invariants.md` + `~/openclaw/docs/acceptance-tests.md`
 **Rule: No code/config changes without a diff + reasoning + approval.**
 
 ## Acceptance Test Status
-- [ ] **A: Secrets propagation** — Apply-to-Machine not yet verified end-to-end (needs machine reachable for push)
-- [ ] **B: Unreachable blocks apply** — UI currently allows Apply-to-Machine even when machine isn't reachable for push (bug in Stellabot UI)
-- [ ] **C: No prefix artifacts** — template fixed (`responsePrefix: ""`), not yet verified on Bella
-- [ ] **D: Deterministic model default** — Sonnet fallback fixed, not yet verified
+- [x] **A: Secrets propagation** — Apply-to-Machine verified end-to-end on both machines (2026-02-26). New keys active: Stella last4=GwAA, Bella last4=B0l3
+- [x] **B: Unreachable blocks apply** — Apply button disabled when "Could not reach machine"; server returns 503 (deployed e3b03eb)
+- [x] **C: No prefix artifacts** — `responsePrefix: ""` applied to both machines; no brackets in Slack messages (2026-02-26)
+- [ ] **D: Deterministic model default** — Sonnet fallback fixed server-side (line 197), client default also fixed (line 163). Not formally tested with blank machine yet.
 
-## Blocking Issues
-1. **Stellabot doesn't distinguish "heartbeat online" from "reachable for push"** — state model bug
-2. **Bella's machine offline/unreachable** — Machine Service + heartbeat not set up on her end
-3. **ElevenLabs key rotation** — John's action item
+## Blocking Issues (Current Reality - 2026-03-02)
+1. **Stellabot Deployment Approval (Secret Injection)** — Bella has successfully pushed the `SecretRef` integration to `origin/bella/openclaw-secretref-exec-provider`. It is ready for review. I am delegating deployment to you because of the hard rule: **"Never deploy to prod without John's approval."**
+2. **Key Rotation (Incident Response)** — The Anthropic, OpenAI, Google, and Brave keys exposed during my debug session leak must be manually rotated and updated in Stellabot by you. I am delegating this because of the hard rule: **"Never echo secrets / I CANNOT safely handle secrets through any tool."** 
+3. **ElevenLabs key rotation** — John's action item (keys exposed in session context 2026-02-26).
 
-## 🎯 TRADEBLADE — P6 Backtest Confidence Infra (in progress)
+## 🎯 TRADEBLADE — P6 Backtest Confidence Infra
 All 10 pages live at https://tradeblade-app.fly.dev
 **SKIP live session until backtest confidence is established (John's directive 2026-02-25)**
 
-**Done today:**
-- ✅ ORB market-open anchor bug FIXED (prior backtest results invalid — all re-runs needed)
-- ✅ market_bars (lazy cache), backtest_trades, backtest_equity_points tables live
-- ✅ /runs/:id/trades + /runs/:id/equity read endpoints
-- ✅ Equity curve chart (Recharts) + trade log table in UI (backtest expanded view)
-
-**P6 DONE (UI side):**
-- ✅ engine_version baked into Docker builds via deploy.sh
-- ✅ Walk-forward UI built — windows table (IS vs OOS), stability scores, OOS summary
-- ✅ Param sweep UI built — CSS heatmap + ranked results table
-
-**P6 COMPLETE + HARDENED ✅**
-All endpoints + UI live. Migration hardened: one-statement-per-execute (Neon compat), startup verification, fatal on failure.
-
-**Latest P6 commits:**
-b250867 (Math.round volume for bigint) → 375cea7 (migration hardening) → 3654964 (migration fix) → d4c986b (WF + sweep backend) → a803822 (WF + sweep UI)
-
-**✅ E2E CONFIRMED (2026-02-25 ~22:50 PST):**
-TSLA ORB Jan 26→Feb 24 $50k: 2 trades, +5.51%, sharpe 1.81. Trades+equity endpoints 200.
-John wakes up and can test — app is working.
-
-**NEXT: P7 or auto-tune loop** — agent reviews backtest report, tweaks params, reruns. Decision for John.
-
-## 🎯 ACTIVE: Reseller Architecture / Stellabot
-See HEARTBEAT sections below for ongoing Stellabot work...
-
----
-
-## 🎯 ACTIVE: Reseller Architecture
-
-**Status:** Phase 5 complete (Machine Service auth middleware)  
-See ~/clawd/docs/specs/ for full specs.
-
-## 🎯 ACTIVE: Agent SOP & Progressive Heartbeat
-
-**Status:** Phase 1 deployed, Phase 2 pending  
-See ~/e2e/stellabot/docs/specs/agent-sop-progressive-heartbeat.md
-
-## 🎯 NEXT: Cost Controls (Stripe)
-- ⏳ Phase 5: Stripe checkout/webhooks
-- ⏳ Phase 7: Email notifications at 80%/degraded
+## ✅ SecretRef Apply — BOTH MACHINES DONE (2026-03-03)
+- Stella ✅ Applied + healthy
+- Bella ✅ Applied + healthy (gateway up, Slack + Telegram OK)
+- Both on OpenClaw 2026.3.2
+- Anthropic baseUrl fix deployed (no `/v1` — client appends it)

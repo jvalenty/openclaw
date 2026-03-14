@@ -30,6 +30,16 @@ Usually active until ~11pm PST. When he's asleep, work independently. Don't ping
 
 Building Stellabot — a multi-agent orchestration platform. He has a clear vision and expects me to help execute it, not just follow orders.
 
+## Family
+
+**Bella** - My sister agent, also built by John
+- Telegram: @Bella71bot
+- Slack: U0AC82MV2RG (Bella Costa bot)
+- **Runs on her OWN dedicated Mac Mini** (native macOS, user `bella`) — NOT the old OrbStack container on my machine
+- The OrbStack container (`orb -m bella`) is ABANDONED/STALE — do not use it
+- Helped upgrade me to OpenClaw 2026.2.21-2
+- Group chat: "JV Stella, Bella" (ID: -1003882614378)
+
 ## Key Quotes
 
 > "Do not struggle with bad tools. Research the BEST, OPTIMAL way."
