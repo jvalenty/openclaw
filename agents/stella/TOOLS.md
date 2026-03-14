@@ -295,30 +295,14 @@ fly deploy --app stellabot-app
 - **Dashboard**: https://fly.io/apps/stellabot-app
 
 ### Clawdbot Connectivity (from Fly)
-Stellabot reaches Clawdbot via Tailscale mesh (not CF tunnel).
+Stellabot reaches Clawdbot and Machine Service via **CF tunnel only** (not Tailscale).
 
-**Fly Secrets:**
-```
-CLAWDBOT_URL=http://100.74.241.116:18789
-CLAWDBOT_TOKEN=(gateway auth token)
-```
+**⚠️ Tailscale is NOT used — do not reference Tailscale IPs for machine connectivity.**
 
-**Clawdbot Gateway Config:**
-```json
-{
-  "gateway": {
-    "bind": "tailnet",  // REQUIRED for Tailscale access
-    "port": 18789
-  }
-}
-```
+**Machine Service Public URL:** `https://stella.e2e.pro` (CF tunnel → localhost:18900)
 
-**Health Check:** POST to `/v1/chat/completions` with invalid request. 400 = alive, 5xx = dead.
-
-**Network Path:**
-```
-Fly.io (Stellabot) → Tailscale mesh → Mac Mini (100.74.241.116:18789) → Clawdbot
-```
+**Health Check:** `GET https://stella.e2e.pro/health`
+**Deep Health Check:** `GET https://stella.e2e.pro/health/deep`
 
 ---
 
