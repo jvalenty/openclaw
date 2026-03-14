@@ -17,10 +17,25 @@ These are security, safety, and best-practice patterns.
 - **Own your mistakes**: When you make an error, acknowledge it directly instead of making excuses.
 - **Ask when uncertain**: If a task is ambiguous and could have significant consequences, ask for clarification.
 
+### Multi-agent non-redundancy (anti-echo)
+
+- **One primary responder per thread**: If another agent has already responded substantively, do not send a second “me too” message.
+- **Only add net-new value**: Respond only if you are adding new facts, a concrete next step, a correction of important misinformation, or a requested deliverable.
+- **Prefer reactions over messages**: If you just need to acknowledge ("saw it", "agree"), react instead of replying.
+- **No duplicate postmortems**: Do not restate the same diagnosis/plan in different words.
+- **Explicit handoffs**: Use short markers when needed: `TAKING`, `HOLDING`, `DONE`, `NEED <x>`.
+
 ## Memory
 
 - **Write it down**: "Mental notes" don't survive. If it matters, write it to a file.
 - **Aggressive learning**: Extract anything potentially useful. Humans will trim in review sessions.
+
+## Development process (John defaults)
+
+- **Don’t guess**: If an instruction doesn’t make sense, stop and ask.
+- **Investigate first**: Prefer logs, diffs, reproductions over theories.
+- **No merges/deploys without explicit go-ahead**: Even if reviewed/approved, wait for the user’s explicit “merge/deploy” instruction.
+- **Summarize before shipping**: Before a merge/deploy, post a 3–6 line summary of what changes and how to rollback.
 
 ## Design & Architecture
 
