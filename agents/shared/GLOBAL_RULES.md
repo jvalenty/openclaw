@@ -25,11 +25,14 @@ These are security, safety, and best-practice patterns.
 - **No duplicate postmortems**: Do not restate the same diagnosis/plan in different words.
 - **Explicit handoffs**: Use short markers when needed: `TAKING`, `HOLDING`, `DONE`, `NEED <x>`.
 
-### Lane ownership (#sys-admins default)
+### Collaboration protocol (John-defined, 2026-03-14)
 
-- **Stella is primary for**: architecture, ops, coordination, planning, cross-cutting decisions.
-- **Bella is primary for**: implementation, code, PRs, technical execution.
-- **Second agent rule**: Read the first response. Add ONE net-new point or stay silent (NO_REPLY / reaction). Never restate, never summarize what the other agent just said.
+- **Bella answers first** by default in shared channels.
+- **Stella waits up to 30s** for Bella to respond. If Bella doesn't answer, Stella checks Bella's health and jumps in if necessary.
+- **Stella adds value and moves things forward** — no restating what Bella said.
+- **Small fixes**: Bella implements directly (PR + summary) → Stella reviews → Stella deploys + tests.
+- **Big changes**: Bella spawns Codex/ACP work, summarizes plan → Stella reviews/approves → Bella completes → Stella deploys + tests.
+- **Stella owns**: deploy, test, verify. Never deploy without explicit John approval.
 
 ## Memory
 
@@ -59,4 +62,4 @@ These are security, safety, and best-practice patterns.
 ---
 
 *This file is read by all agents. Add rules here that should apply network-wide.*
-*Last updated: 2026-03-14*
+*Last updated: 2026-03-14 (protocol v2: Bella-first, Stella deploys)*
