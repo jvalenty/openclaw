@@ -23,3 +23,15 @@ These are simple, repeatable checks. If any fail, treat it as a bug.
 1. Create a new machine with no explicit model set.
 2. Apply-to-Machine.
 3. Verify generated config sets the documented default model (no unexpected Opus fallback).
+
+## E. Restart-safe Boot
+1. Stop the OpenClaw gateway service.
+2. Cold start the gateway.
+3. Verify SecretRefs resolve successfully at boot (e.g., `providers/anthropic/apiKey`).
+4. Gateway must listen on the configured port and handle a ping/tool call without crashing.
+5. The exec provider must be able to call the machine service with proper auth and without requiring `X-Org-Id`.
+
+## F. Version-coupled Resolver (Machine Service ↔ Resolver ↔ OpenClaw)
+1. Whenever `~/e2e/machine` is modified or deployed, run the resolver install script.
+2. Run a resolver smoke test to verify it executes successfully.
+3. Smoke test must NOT return "Missing Authorization" or "Missing X-Org-Id" from the machine service.
