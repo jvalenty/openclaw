@@ -33,5 +33,5 @@ These are simple, repeatable checks. If any fail, treat it as a bug.
 
 ## F. Version-coupled Resolver (Machine Service ↔ Resolver ↔ OpenClaw)
 1. Whenever `~/e2e/machine` is modified or deployed, run the resolver install script.
-2. Run a resolver smoke test to verify it executes successfully.
+2. Run the resolver smoke test (`npm run test:secretref-bridge` in `~/e2e/machine`) to verify it executes successfully.
 3. Smoke test must NOT return "Missing Authorization" or "Missing X-Org-Id" from the machine service.
